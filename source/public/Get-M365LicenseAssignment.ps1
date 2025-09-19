@@ -58,7 +58,8 @@ function Get-M365LicenseAssignment {
         'OnPremisesSyncEnabled',
         'AssignedLicenses'
         'OfficeLocation',
-        'AccountEnabled'
+        'AccountEnabled',
+        'CompanyName'
     )
 
     $param = @{
@@ -110,6 +111,7 @@ function Get-M365LicenseAssignment {
                 'Account Enabled'     = $_.AccountEnabled
                 'Office'              = $_.OfficeLocation
                 'Department'          = $_.Department
+                'Company Name'        = $_.CompanyName
                 'City'                = $_.City
                 'State or province'   = $_.State
                 'Country or region'   = $_.Country
