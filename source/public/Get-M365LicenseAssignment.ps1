@@ -73,15 +73,17 @@ function Get-M365LicenseAssignment {
         default { }
     }
 
-    if (-not $PSBoundParameters.ContainsKey('IncludeGuest')) {
-        $param.Add(
-            'Filter',
-            $("UserType eq 'Member'")
-        )
-        SayInfo "User type filter = Member only"
-    }
-    else {
-        SayInfo "User type filter = Member and Guest"
+    if ($PSCmdlet.ParameterSetName -ne 'UserId') {
+        if (-not $PSBoundParameters.ContainsKey('IncludeGuest')) {
+            $param.Add(
+                'Filter',
+                $("UserType eq 'Member'")
+            )
+            SayInfo "User type filter = Member only"
+        }
+        else {
+            SayInfo "User type filter = Member and Guest"
+        }
     }
 
     try {
