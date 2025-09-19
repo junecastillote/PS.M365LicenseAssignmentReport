@@ -9,9 +9,18 @@ function Get-M365LicenseAssignment {
         [switch]
         $All,
 
-        [Parameter()]
         [string]
-        $LicenseDelimiterChar = ";"
+        $LicenseDelimiterChar = ";",
+
+        [Parameter(Mandatory, ParameterSetName = 'Top')]
+        [ValidateRange(1, 5000)]
+        [int]
+        $Top,
+
+        [Parameter(ParameterSetName = 'Top')]
+        [Parameter(ParameterSetName = 'All')]
+        [switch]
+        $IncludeGuest
     )
 
     if (!(Get-Module Microsoft.Graph.Authentication)) {
@@ -48,7 +57,8 @@ function Get-M365LicenseAssignment {
         'JobTitle',
         'OnPremisesSyncEnabled',
         'AssignedLicenses'
-        'OfficeLocation'
+        'OfficeLocation',
+        'AccountEnabled'
     )
 
     $param = @{
@@ -58,11 +68,36 @@ function Get-M365LicenseAssignment {
     switch ($PSCmdlet.ParameterSetName) {
         'UserId' { $param.Add('UserId', $UserId) }
         'All' { $param.Add('All', $true) }
+        'Top' { $param.Add('Top', $Top) }
         default { }
     }
 
+    if (-not $PSBoundParameters.ContainsKey('IncludeGuest')) {
+        $param.Add(
+            'Filter',
+            $("UserType eq 'Member'")
+        )
+        SayInfo "User type filter = Member only"
+    }
+    else {
+        SayInfo "User type filter = Member and Guest"
+    }
+
     try {
-        Get-MgUser @param -ErrorAction Stop | Select-Object $propertySet | ForEach-Object {
+
+        SayInfo "Getting users..."
+        $users = Get-MgUser @param -ErrorAction Stop | Select-Object $propertySet
+        $total = $users.Count
+        $counter = 0
+        SayInfo "Total users = $($total)"
+
+        ($users | Sort-Object DisplayName) | ForEach-Object {
+            $counter++
+
+            Write-Progress -Activity "Processing Users" `
+                -Status "Processing [$($counter) of $($total)] $($_.DisplayName)" `
+                -PercentComplete (($counter / $total) * 100)
+
             [PSCustomObject]@{
                 'Object id'           = $_.id
                 'Last name'           = $_.Surname
@@ -72,6 +107,7 @@ function Get-M365LicenseAssignment {
                 'Job title'           = $_.JobTitle
                 'Is guest user'       = $(if ($_.UserType -eq 'Guest') { $true }  else { $false })
                 'Dir sync enabled'    = $(if ($_.OnPremisesSyncEnabled) { $true } else { $false })
+                'Account Enabled'     = $_.AccountEnabled
                 'Office'              = $_.OfficeLocation
                 'Department'          = $_.Department
                 'City'                = $_.City
@@ -91,6 +127,9 @@ function Get-M365LicenseAssignment {
                 )
             }
         }
+
+        # Clear the progress bar after completion
+        Write-Progress -Activity "Processing Users" -Completed
     }
     catch {
         SayError $_.Exception.Message
