@@ -12,10 +12,10 @@
     RootModule        = 'PS.M365LicenseAssignmentReport.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.2.0'
+    ModuleVersion     = '0.2.1'
 
     # Supported PSEditions
-    # CompatiblePSEditions = @()
+    # CompatiblePSEditions = @('Desk','Core')
 
     # ID used to uniquely identify this module
     GUID              = 'cf81d66b-aa3b-42d0-87d0-7f8a57f120f5'
@@ -33,7 +33,7 @@
     Description       = 'Export Microsoft 365 user assignments using PowerShell and Microsoft Graph API'
 
     # Minimum version of the PowerShell engine required by this module
-    # PowerShellVersion = ''
+    # PowerShellVersion = '5.1'
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''
@@ -97,13 +97,13 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            # Tags = @()
+            Tags       = @('License Report', 'Office 365', 'Microsoft 365')
 
             # A URL to the license for this module.
-            # LicenseUri = ''
+            LicenseUri = 'https://github.com/junecastillote/PS.M365LicenseAssignmentReport/blob/main/README.md'
 
             # A URL to the main website for this project.
-            # ProjectUri = ''
+            ProjectUri = 'https://github.com/junecastillote/PS.M365LicenseAssignmentReport'
 
             # A URL to an icon representing this module.
             # IconUri = ''
