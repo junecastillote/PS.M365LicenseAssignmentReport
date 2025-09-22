@@ -1,0 +1,9 @@
+*.csv
+*.xml
+ignore/
+demo*
+test*
+UL/
+*.xlsx
+module/
+PS.M365LicenseAssignmentReport/
