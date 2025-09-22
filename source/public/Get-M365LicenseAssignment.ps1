@@ -20,7 +20,12 @@ function Get-M365LicenseAssignment {
         [Parameter(ParameterSetName = 'Top')]
         [Parameter(ParameterSetName = 'All')]
         [switch]
-        $IncludeGuest
+        $IncludeGuest,
+
+        [Parameter(ParameterSetName = 'Top')]
+        [Parameter(ParameterSetName = 'All')]
+        [string]
+        $UsageLocation
     )
 
     if (!(Get-Module Microsoft.Graph.Authentication)) {
@@ -88,13 +93,17 @@ function Get-M365LicenseAssignment {
         if (-not $PSBoundParameters.ContainsKey('IncludeGuest')) {
 
             $param["Filter"] = $param["Filter"] + " and userType eq 'Member'"
-            SayInfo "User type filter = Member only"
+            # SayInfo "User type filter = Member only"
         }
         else {
-            SayInfo "User type filter = Member and Guest"
+            # SayInfo "User type filter = Member and Guest"
         }
 
-        # SayInfo $param["Filter"]
+        if ($PSBoundParameters.ContainsKey('UsageLocation')) {
+            $param["Filter"] = $param["Filter"] + " and usageLocation eq '$($UsageLocation)'"
+        }
+
+        SayInfo "Filter = $($param["Filter"])"
 
     }
 
