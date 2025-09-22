@@ -24,7 +24,7 @@
     Author            = 'June Castillote'
 
     # Company or vendor of this module
-    CompanyName       = 'Unknown'
+    CompanyName       = 'June Castillote'
 
     # Copyright statement for this module
     Copyright         = '(c) June Castillote. All rights reserved.'
