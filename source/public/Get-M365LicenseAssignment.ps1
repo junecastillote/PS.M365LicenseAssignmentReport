@@ -24,12 +24,12 @@ function Get-M365LicenseAssignment {
     )
 
     if (!(Get-Module Microsoft.Graph.Authentication)) {
-        Say Error "Connect to Microsoft Graph PowerShell first with the following minimum permissions: LicenseAssignment.Read.All, User.ReadBasic.All"
+        Say Error "Connect to Microsoft Graph PowerShell first with the following minimum permissions: LicenseAssignment.Read.All, User.Read.All"
         return $null
     }
 
     if (!(Get-MgContext)) {
-        Say Error "Connect to Microsoft Graph PowerShell first with the following minimum permissions: LicenseAssignment.Read.All, User.ReadBasic.All"
+        Say Error "Connect to Microsoft Graph PowerShell first with the following minimum permissions: LicenseAssignment.Read.All, User.Read.All"
         return $null
     }
 
@@ -40,6 +40,12 @@ function Get-M365LicenseAssignment {
     catch {
         SayError "There was an error getting the Sku Table from Microsoft Learn. The license names will not be resolved to friendly names."
         SayError $_.Exception.Message
+    }
+
+    # Build the license lookup table
+    $subscribedSku = @{}
+    Get-MgSubscribedSku | ForEach-Object {
+        $subscribedSku.Add($_.SkuId, $_.SkuPartNumber)
     }
 
     $propertySet = @(
@@ -74,16 +80,22 @@ function Get-M365LicenseAssignment {
     }
 
     if ($PSCmdlet.ParameterSetName -ne 'UserId') {
+        $filter = "assignedLicenses/`$count ne 0"
+        $param.Add('Filter', $filter)
+        $param.Add('CountVariable', 'UserCount')
+        $param.Add('ConsistencyLevel', 'Eventual')
+
         if (-not $PSBoundParameters.ContainsKey('IncludeGuest')) {
-            $param.Add(
-                'Filter',
-                $("UserType eq 'Member'")
-            )
+
+            $param["Filter"] = $param["Filter"] + " and userType eq 'Member'"
             SayInfo "User type filter = Member only"
         }
         else {
             SayInfo "User type filter = Member and Guest"
         }
+
+        # SayInfo $param["Filter"]
+
     }
 
     try {
@@ -121,12 +133,20 @@ function Get-M365LicenseAssignment {
                 'Has license'         = $(if (($_.AssignedLicenses.SkuId)) { $true } else { $false } )
                 'Licenses'            = $(
                     if ($_.AssignedLicenses.SkuId) {
-                        ($_.AssignedLicenses.SkuId | ForEach-Object { $skuId = $_ ; ((GetM365ProductIdTable -SkuId $skuId).SkuName) }) -join $LicenseDelimiterChar
+                        ($_.AssignedLicenses.SkuId | ForEach-Object { $skuId = $_ ; $(
+                                $sku = GetM365ProductIdTable -SkuId $skuId
+                                if (!$sku) {
+                                    $subscribedSku[$skuId]
+                                }
+                                else {
+                                    $sku.SkuName
+                                }
+                            ) }) -join $LicenseDelimiterChar
                     }
                 )
                 'AssignedProductSkus' = $(
                     if ($_.AssignedLicenses.SkuId) {
-                        ($_.AssignedLicenses.SkuId | ForEach-Object { $skuId = $_ ; ((GetM365ProductIdTable -SkuId $skuId).SkuPartNumber) }) -join $LicenseDelimiterChar
+                        ($_.AssignedLicenses.SkuId | ForEach-Object { $skuId = $_ ; $subscribedSku[$skuId] }) -join $LicenseDelimiterChar
                     }
                 )
             }
