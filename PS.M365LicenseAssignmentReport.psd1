@@ -97,7 +97,7 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags       = @('License Report', 'Office 365', 'Microsoft 365')
+            Tags       = @('License', 'Report', 'Office365', 'Microsoft365')
 
             # A URL to the license for this module.
             LicenseUri = 'https://github.com/junecastillote/PS.M365LicenseAssignmentReport/blob/main/README.md'
